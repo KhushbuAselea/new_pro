@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NY Play OTT — Proposal by Aselea Network</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="aselea-logo.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="aselea-logo.png">
+<link rel="shortcut icon" href="aselea-logo.png" type="image/png">
+<meta name="theme-color" content="#060608">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --black:#060608;--white:#f4f2ee;--red:#e8302a;--red2:#ff4d46;
+  --gold:#c9a84c;--gray:#111114;--gray2:#1a1a1f;--muted:#555560;
+  --border:#1e1e24;--font-display:'Bebas Neue',sans-serif;
+  --font-body:'Barlow',sans-serif;--font-cond:'Barlow Condensed',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:var(--font-body);overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+#cur,#cur-r{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cur{width:10px;height:10px;background:var(--red)}
+#cur-r{width:38px;height:38px;border:1px solid rgba(232,48,42,.4);z-index:9998;transition:width .25s,height .25s}
+body:hover #cur-r{transition:width .25s,height .25s}
+
+canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* NOISE */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.022;pointer-events:none;z-index:9997}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:22px 56px;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+nav.sc{background:rgba(6,6,8,.92);backdrop-filter:blur(16px);border-color:var(--border)}
+.nav-logo{display:flex;align-items:center;gap:12px}
+.nav-logo-img{height:40px;width:auto;display:block}
+.nav-logo-text{display:flex;flex-direction:column;line-height:1}
+.nav-logo-main{font-family:var(--font-display);font-size:18px;letter-spacing:2px;color:var(--white)}
+.nav-logo-main span{color:var(--red)}
+.nav-logo-sub{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:var(--font-cond)}
+.nav-right{display:flex;align-items:center;gap:24px}
+.nav-link{font-family:var(--font-cond);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-link:hover{color:var(--white)}
+.nav-cta{font-family:var(--font-cond);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:8px 22px;text-decoration:none;transition:background .2s,color .2s}
+.nav-cta:hover{background:var(--red);color:var(--white)}
+
+section{position:relative;z-index:1}
+
+/* ─── HERO ─── */
+#hero{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 56px;overflow:hidden;text-align:center;gap:24px}
+.hero-eyebrow{font-family:var(--font-cond);font-size:11px;letter-spacing:5px;color:var(--red);text-transform:uppercase;margin-bottom:20px;opacity:0;transform:translateY(16px);animation:fu .7s .2s forwards}
+.hero-title{font-family:var(--font-display);font-size:clamp(90px,16vw,220px);line-height:.85;letter-spacing:-2px;opacity:0;transform:translateY(40px);animation:fu .9s .4s forwards}
+.hero-title .t-outline{-webkit-text-stroke:1.5px rgba(255,255,255,.25);color:transparent}
+.hero-title .t-red{color:var(--red)}
+.hero-divider{width:100%;height:1px;background:var(--border);margin:36px 0;opacity:0;animation:fu .5s .9s forwards}
+.hero-bottom{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;opacity:0;transform:translateY(16px);animation:fu .7s 1s forwards}
+.hero-desc{font-size:15px;font-weight:300;color:#88888f;max-width:460px;line-height:1.75}
+.hero-meta{display:flex;gap:48px}
+.hm-item label{font-family:var(--font-cond);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px}
+.hm-item span{font-family:var(--font-display);font-size:32px;letter-spacing:1px}
+.hm-item span.acc{color:var(--red)}
+.scroll-ind{position:absolute;bottom:40px;left:56px;display:flex;align-items:center;gap:14px;font-family:var(--font-cond);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;opacity:0;animation:fu .6s 1.4s forwards}
+.scroll-ln{width:36px;height:1px;background:var(--red);transform:scaleX(0);transform-origin:left;animation:xl 1s 1.6s forwards}
+
+/* ─── DIVIDERS ─── */
+.sec-div{display:flex;align-items:center;gap:20px;padding:0 56px;margin-bottom:56px}
+.sec-div .tag{font-family:var(--font-cond);font-size:11px;font-weight:700;letter-spacing:4px;color:var(--red);text-transform:uppercase;white-space:nowrap}
+.sec-div .ln{flex:1;height:1px;background:var(--border)}
+.sec-div .num{font-family:var(--font-display);font-size:13px;color:var(--border);letter-spacing:2px}
+
+/* ─── OVERVIEW ─── */
+#overview{padding:140px 56px}
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.ov-left h2{font-family:var(--font-display);font-size:clamp(52px,7vw,100px);line-height:.88;margin-bottom:32px}
+.ov-left h2 em{font-style:normal;color:var(--red)}
+.ov-left p{font-size:15px;font-weight:300;color:#88888f;line-height:1.8;margin-bottom:14px}
+.ov-right{display:flex;flex-direction:column;gap:2px}
+.stat{background:var(--gray2);border-left:3px solid var(--red);padding:24px 28px;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+.stat:hover{background:#222228}
+.stat .sl{font-family:var(--font-cond);font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+.stat .sv{font-family:var(--font-display);font-size:34px;color:var(--white);letter-spacing:1px}
+.stat .sv span{color:var(--red);font-size:18px}
+.server-note{margin-top:2px;background:#0e0e12;border:1px solid var(--gold);border-left:3px solid var(--gold);padding:20px 28px}
+.server-note .sn-label{font-family:var(--font-cond);font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.server-note p{font-size:13px;color:#aaa;line-height:1.7;font-weight:300}
+
+/* ─── PLATFORM PREVIEW ─── */
+#preview{padding:0 0 120px;overflow:hidden}
+.preview-header{padding:0 56px;margin-bottom:48px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.preview-header .sec-div{width:100%;max-width:1200px;justify-content:center}
+.preview-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9}
+.preview-header h2 span{color:var(--red)}
+.feat-header,.pay-header,.stack-header,.del-header,.tl-header,.pr-header,.founder-right,.co-header{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 56px;margin-bottom:64px}
+.feat-header h2,.pay-header h2,.stack-header h2,.del-header h2,.tl-header h2,.pr-header h2,.founder-right h2{margin-bottom:16px}
+.feat-header p,.pay-header p,.stack-header p,.del-header p,.tl-header p,.pr-header p{max-width:720px;margin:0 auto;color:var(--muted)}
+#features .sec-div,#payments .sec-div,#stack .sec-div,#deliverables .sec-div,#timeline .sec-div,#pricing .sec-div,#founder .sec-div,#company .sec-div{max-width:1200px;margin:0 auto;padding:0 56px;justify-content:center}
+.screenshots-track{overflow-x:auto;padding:0 56px;scrollbar-width:none;-ms-overflow-style:none;cursor:grab;-webkit-overflow-scrolling:touch}
+.screenshots-track .ss-track{display:flex;gap:16px;align-items:flex-start;min-width:max-content;user-select:none;-webkit-user-select:none}
+.screenshots-track:active{cursor:grabbing}
+.screenshots-track::-webkit-scrollbar{display:none}
+.ss-card{flex-shrink:0;width:480px;border:1px solid var(--border);overflow:hidden;position:relative;transition:border-color .3s,transform .3s}
+.ss-card:hover{border-color:var(--red);transform:translateY(-4px)}
+.ss-card img{width:100%;height:270px;object-fit:cover;object-position:top;display:block;filter:brightness(.9)}
+.ss-card .ss-label{padding:14px 18px;background:var(--gray2);font-family:var(--font-cond);font-size:12px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+
+
+
+/* ─── USE CASES ─── */
+#usecases{padding:120px 56px;background:var(--gray);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.uc-header{margin-bottom:72px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.uc-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9;margin-bottom:16px}
+.uc-header h2 span{color:var(--red)}
+.uc-header p{font-size:15px;color:var(--muted);font-weight:300;max-width:720px;margin:0 auto}
+.uc-header{padding:0 56px}
+
+/* Center the small section divider for Use Cases */
+#usecases .sec-div{max-width:1200px;margin:0 auto;padding:0 56px;justify-content:center}
+.uc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.uc-item{background:var(--black);padding:44px 36px;border-top:3px solid transparent;transition:border-color .3s,background .2s;position:relative;overflow:hidden}
+.uc-item::after{content:attr(data-num);position:absolute;bottom:-10px;right:16px;font-family:var(--font-display);font-size:80px;color:rgba(255,255,255,.03);pointer-events:none}
+.uc-item:hover{border-color:var(--red);background:#0e0e12}
+.uc-icon{width:64px;height:64px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(232,48,42,0.04), rgba(255,255,255,0.01));border-radius:12px;margin-bottom:20px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.35) inset;transition:transform .25s,box-shadow .25s,background .25s}
+.uc-icon svg{width:32px;height:32px;stroke:var(--white);stroke-width:1.4;fill:none}
+.uc-icon .accent{fill:var(--red);stroke:none}
+.uc-item:hover .uc-icon{transform:translateY(-6px) scale(1.02);box-shadow:0 12px 30px rgba(0,0,0,.55) inset;background:linear-gradient(180deg, rgba(232,48,42,0.08), rgba(255,255,255,0.02))}
+.uc-title{font-family:var(--font-cond);font-size:20px;font-weight:700;letter-spacing:1px;color:var(--white);text-transform:uppercase;margin-bottom:12px}
+.uc-desc{font-size:14px;color:var(--muted);line-height:1.75;font-weight:300}
+
+/* ─── FEATURES ─── */
+#features{padding:120px 56px}
+.feat-header{margin-bottom:64px}
+.feat-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9}
+.feat-header h2 span{color:var(--red)}
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px}
+.feat-item{background:var(--gray2);padding:28px 32px;display:flex;align-items:flex-start;gap:20px;border:1px solid transparent;transition:border-color .2s,background .2s}
+.feat-item:hover{border-color:var(--border);background:#1e1e24}
+.feat-icon-box{width:48px;height:48px;background:linear-gradient(180deg, rgba(232,48,42,0.04), rgba(255,255,255,0.01));border:1px solid rgba(232,48,42,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;border-radius:8px;box-shadow:inset 0 4px 12px rgba(0,0,0,.35);transition:transform .25s,background .25s}
+.feat-icon-box svg{width:24px;height:24px;stroke:var(--white);stroke-width:1.2;fill:none}
+.feat-icon-box .accent{fill:var(--red);stroke:none}
+.feat-item:hover .feat-icon-box{transform:translateY(-6px);background:linear-gradient(180deg, rgba(232,48,42,0.08), rgba(255,255,255,0.02));box-shadow:inset 0 10px 30px rgba(0,0,0,.5)}
+
+.sk-emoji{width:46px;height:46px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));box-shadow:0 6px 18px rgba(5,13,26,0.12);flex-shrink:0}
+.sk-emoji svg{width:26px;height:26px;fill:var(--white);opacity:0.98}
+.sk-emoji svg .accent{fill:var(--red)}
+.sk-item:hover .sk-emoji{transform:translateY(-6px);background:linear-gradient(180deg, rgba(232,48,42,0.08), rgba(255,255,255,0.02));}
+.feat-text .ft{font-family:var(--font-cond);font-size:14px;font-weight:700;letter-spacing:1px;color:var(--white);text-transform:uppercase;margin-bottom:4px}
+.feat-text .fd{font-size:13px;color:var(--muted);line-height:1.6;font-weight:300}
+
+/* ─── PAYMENTS ─── */
+#payments{padding:100px 56px;background:var(--gray);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.pay-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9;margin-bottom:56px}
+.pay-header h2 span{color:var(--red)}
+.pay-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:32px}
+.pay-item{background:var(--black);padding:24px;display:flex;align-items:center;justify-content:center;min-height:80px;font-family:var(--font-cond);font-size:15px;font-weight:700;letter-spacing:1px;color:#888;text-transform:uppercase;border:1px solid transparent;transition:border-color .2s,color .2s}
+.pay-item:hover{border-color:var(--border);color:var(--white)}
+.pay-note{font-size:12px;color:var(--muted);letter-spacing:1px;font-weight:300}
+
+/* ─── STACK ─── */
+#stack{padding:120px 56px}
+.stack-header{margin-bottom:64px}
+.stack-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9}
+.stack-header h2 span{color:var(--red)}
+.stack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.sk-item{background:var(--gray2);padding:44px 36px;border-top:3px solid transparent;transition:border-color .3s,transform .3s}
+.sk-item:hover{border-color:var(--red);transform:translateY(-4px)}
+.sk-num{font-family:var(--font-display);font-size:52px;color:var(--border);line-height:1;margin-bottom:14px}
+.sk-emoji{width:46px;height:46px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));box-shadow:0 6px 18px rgba(5,13,26,0.12);flex-shrink:0}
+.sk-title{font-family:var(--font-cond);font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white);margin-bottom:6px}
+.sk-tech{font-family:var(--font-cond);font-size:11px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:14px}
+.sk-desc{font-size:14px;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* ─── DELIVERABLES ─── */
+#deliverables{padding:120px 56px;background:var(--gray);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.del-header{margin-bottom:64px}
+.del-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9}
+.del-header h2 span{color:var(--red)}
+.del-list{display:flex;flex-direction:column;gap:2px}
+.del-item{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:24px;padding:26px 32px;background:var(--black);border:1px solid transparent;transition:border-color .2s,background .2s}
+.del-item:hover{border-color:var(--red);background:#0e0e12}
+.di-idx{font-family:var(--font-display);font-size:30px;color:var(--border);letter-spacing:1px}
+.del-item:hover .di-idx{color:var(--red)}
+.di-name{font-family:var(--font-cond);font-size:18px;font-weight:700;letter-spacing:1px;color:var(--white);text-transform:uppercase;display:block;margin-bottom:3px}
+.di-detail{font-size:13px;color:var(--muted);font-weight:300}
+.di-tag{font-family:var(--font-cond);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:5px 14px;white-space:nowrap;border:1px solid var(--border);color:var(--muted)}
+.di-tag.h{border-color:var(--red);color:var(--red)}
+
+/* ─── TIMELINE ─── */
+#timeline{padding:120px 56px}
+.tl-header{margin-bottom:64px}
+.tl-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9}
+.tl-header h2 span{color:var(--red)}
+.tl-track{position:relative;padding-left:36px}
+.tl-track::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:1px;background:var(--border)}
+.phase{position:relative;padding:32px 0 32px 48px;border-bottom:1px solid var(--border)}
+.phase:last-child{border-bottom:none}
+.phase::before{content:'';position:absolute;left:-5px;top:38px;width:10px;height:10px;background:var(--red);border-radius:50%}
+.ph-week{font-family:var(--font-cond);font-size:10px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:8px}
+.ph-title{font-family:var(--font-cond);font-size:24px;font-weight:700;color:var(--white);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.ph-tasks{display:flex;flex-wrap:wrap;gap:8px}
+.ph-task{font-size:12px;font-weight:300;color:#888;background:var(--gray2);padding:4px 14px;border:1px solid var(--border);letter-spacing:.5px}
+
+/* ─── PRICING ─── */
+#pricing{padding:120px 56px;background:var(--gray);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.pr-header{margin-bottom:64px}
+.pr-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9}
+.pr-header h2 span{color:var(--red)}
+.pr-card{background:var(--black);border:1px solid var(--border);padding:72px;position:relative;overflow:hidden;max-width:860px}
+.pr-card::before{content:'CONFIDENTIAL';position:absolute;top:28px;right:-24px;font-family:var(--font-display);font-size:72px;color:rgba(255,255,255,.025);letter-spacing:6px;pointer-events:none}
+.pr-for{font-family:var(--font-cond);font-size:11px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.pr-client{font-family:var(--font-display);font-size:44px;color:var(--white);letter-spacing:2px;margin-bottom:48px}
+.pr-row{display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--border)}
+.pr-row:last-of-type{border:none}
+.pr-rl{font-size:14px;font-weight:300;color:#888}
+.pr-rv{font-family:var(--font-cond);font-size:18px;font-weight:700;color:var(--white);letter-spacing:1px}
+.pr-total{margin-top:40px;padding-top:40px;border-top:1px solid var(--red);display:flex;justify-content:space-between;align-items:flex-end}
+.pr-total-lhs .ptl{font-family:var(--font-cond);font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.pr-total-lhs .ptn{font-size:12px;color:var(--muted);font-weight:300;line-height:1.8}
+.pr-total-val{font-family:var(--font-display);font-size:80px;color:var(--red);line-height:1;letter-spacing:2px}
+.pr-total-val sub{font-size:24px;vertical-align:bottom;color:var(--muted)}
+.server-warn{margin-top:20px;padding:18px 24px;border:1px solid var(--gold);background:rgba(201,168,76,.06)}
+.server-warn .sw-l{font-family:var(--font-cond);font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.server-warn p{font-size:13px;color:#aaa;line-height:1.7;font-weight:300}
+
+/* ─── FOUNDER ─── */
+#founder{padding:120px 56px}
+.founder-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:80px;align-items:start}
+.founder-left{position:sticky;top:120px}
+.founder-avatar{width:100%;aspect-ratio:3/4;background:var(--gray2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:24px;overflow:hidden;position:relative}
+.founder-avatar::before{content:'TS';font-family:var(--font-display);font-size:140px;color:rgba(232,48,42,.08);position:absolute}
+.founder-avatar-inner{position:relative;z-index:1;text-align:center}
+.founder-initials{font-family:var(--font-display);font-size:64px;color:var(--red);letter-spacing:4px;display:block}
+.founder-role{font-family:var(--font-cond);font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:8px}
+.founder-name{font-family:var(--font-display);font-size:32px;color:var(--white);letter-spacing:2px;margin-bottom:6px}
+.founder-title-tag{font-family:var(--font-cond);font-size:12px;letter-spacing:2px;color:var(--red);text-transform:uppercase}
+.founder-links{display:flex;gap:12px;margin-top:20px}
+.f-link{font-family:var(--font-cond);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);padding:7px 16px;text-decoration:none;transition:all .2s}
+.f-link:hover{border-color:var(--white);color:var(--white)}
+.founder-right h2{font-family:var(--font-display);font-size:clamp(42px,5vw,72px);line-height:.9;margin-bottom:36px}
+.founder-right h2 span{color:var(--red)}
+.founder-right p{font-size:15px;font-weight:300;color:#88888f;line-height:1.85;margin-bottom:18px}
+.founder-right p strong{color:var(--white);font-weight:600}
+.achievements{margin-top:48px;display:grid;grid-template-columns:repeat(2,1fr);gap:2px}
+.ach-item{background:var(--gray2);padding:28px;border-left:3px solid var(--red)}
+.ach-val{font-family:var(--font-display);font-size:44px;color:var(--white);letter-spacing:2px;line-height:1}
+.ach-val span{color:var(--red);font-size:24px}
+.ach-label{font-family:var(--font-cond);font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:6px}
+
+/* ─── COMPANY ─── */
+#company{padding:120px 56px;background:var(--gray);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.co-header{margin-bottom:64px}
+.co-header h2{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:.9}
+.co-header h2 span{color:var(--red)}
+.offices{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin-bottom:56px;align-items:stretch}
+.office{background:var(--black);padding:32px 24px;border:1px solid var(--border);border-top:3px solid transparent;transition:border-top-color .3s,transform .25s,box-shadow .25s;display:flex;flex-direction:column}
+.office:hover{border-top-color:var(--red);transform:translateY(-5px);box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.office-flag{font-size:32px;margin-bottom:14px}
+.office-country{font-family:var(--font-cond);font-size:14px;font-weight:700;letter-spacing:1.5px;color:var(--white);text-transform:uppercase;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.office-addr{font-size:12px;color:var(--muted);line-height:1.85;font-weight:300;flex:1}
+.office-contact{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--font-cond);font-size:11px;letter-spacing:.5px;line-height:2.1}
+.office-contact a,.office-contact span{color:var(--muted);text-decoration:none;display:block;transition:color .2s}
+.office:hover .office-contact a,.office:hover .office-contact span{color:var(--white)}
+.co-services{margin-top:56px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.co-services h3{font-family:var(--font-cond);font-size:14px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:18px}
+.service-pills{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:1200px;margin:0 auto}
+.s-pill{font-family:var(--font-cond);font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:10px 20px;border:1px solid var(--border);color:var(--muted);transition:all .2s;border-radius:6px;background:transparent}
+.s-pill:hover{border-color:var(--red);color:var(--white);background:rgba(232,48,42,0.03)}
+
+/* ─── CTA ─── */
+#cta{padding:180px 56px;text-align:center;position:relative;overflow:hidden}
+.cta-ghost{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-display);font-size:clamp(80px,18vw,260px);color:rgba(255,255,255,.015);white-space:nowrap;letter-spacing:8px;pointer-events:none}
+.cta-inner{position:relative;z-index:1}
+.cta-tag{font-family:var(--font-cond);font-size:11px;letter-spacing:5px;color:var(--red);text-transform:uppercase;margin-bottom:24px}
+.cta-title{font-family:var(--font-display);font-size:clamp(64px,11vw,160px);line-height:.85;margin-bottom:36px}
+.cta-title .t-outline{-webkit-text-stroke:1px #333;color:transparent}
+.cta-sub{font-size:15px;color:var(--muted);font-weight:300;margin-bottom:60px}
+.cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-p{font-family:var(--font-cond);font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:var(--red);color:var(--white);padding:18px 52px;text-decoration:none;transition:background .2s,transform .2s;display:inline-block}
+.btn-p:hover{background:#c0201a;transform:translateY(-2px)}
+.btn-s{font-family:var(--font-cond);font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:transparent;color:var(--white);padding:18px 52px;border:1px solid var(--border);text-decoration:none;transition:border-color .2s,transform .2s;display:inline-block}
+.btn-s:hover{border-color:var(--white);transform:translateY(-2px)}
+
+/* ─── FOOTER ─── */
+footer{border-top:1px solid var(--border);padding:40px 56px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px}
+.ft-brand{display:flex;align-items:center;gap:14px;justify-content:flex-start}
+.ft-brand a{display:flex;align-items:center;gap:12px}
+.footer-logo{height:44px;width:auto;display:block}
+.ft-brand small{display:block;font-family:var(--font-cond);font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:2px}
+.ft-center{text-align:center;font-size:11px;color:var(--muted);letter-spacing:1px;line-height:1.8;justify-self:center}
+.ft-right{text-align:right;font-size:12px;color:var(--muted);line-height:1.9;justify-self:end}
+.ft-right a{color:var(--red);text-decoration:none}
+
+/* Official website block (centered) */
+.official-box{margin:48px auto 0;padding:28px 32px;background:var(--black);border:1px solid var(--border);max-width:700px;text-align:center}
+.official-box .label{font-family:var(--font-cond);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.official-box .link{font-family:var(--font-display);font-size:32px;color:var(--white);text-decoration:none;letter-spacing:2px;display:inline-flex;align-items:center;gap:10px;transition:color .2s}
+.official-box .link:hover{color:var(--red)}
+.official-box .official-icon{height:28px;width:auto;border-radius:6px;opacity:.98;margin-left:10px}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+@keyframes xl{to{transform:scaleX(1)}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}
+.reveal.vis{opacity:1;transform:translateY(0)}
+
+/* ─── RESPONSIVE ─── */
+
+/* TABLET: iPad and larger tablets (641px - 1024px) */
+@media(max-width:1024px){
+  nav,#hero,#overview,#preview .preview-header,#usecases,#features,#payments,#stack,#deliverables,#timeline,#pricing,#founder,#company,#cta,footer{padding-left:28px;padding-right:28px}
+  .sec-div{padding:0 28px}
+  .offices{grid-template-columns:repeat(3,1fr);gap:16px}
+  .ov-grid{gap:48px}
+  .scroll-ind{left:28px}
+  .hero-meta{flex-direction:column;gap:24px;align-items:flex-start}
+}
+
+/* TABLET: Medium tablets (768px - 1024px) */
+@media(max-width:900px){
+  nav{padding:18px 24px}
+  .nav-logo-img{height:36px}
+  .nav-link{font-size:11px}
+  .nav-cta{padding:7px 16px;font-size:11px}
+  
+  #hero{padding:0 24px;min-height:85vh}
+  .hero-title{font-size:clamp(60px,12vw,140px)}
+  .hero-eyebrow{font-size:10px}
+  .hero-desc{font-size:14px}
+  .hm-item span{font-size:24px}
+  .scroll-ind{left:24px;font-size:9px}
+  
+  #overview,#preview .preview-header,#usecases,#features,#payments,#stack,#deliverables,#timeline,#pricing,#founder,#company,#cta,footer{padding-left:24px;padding-right:24px}
+  .sec-div{padding:0 24px;margin-bottom:40px}
+  .sec-div .tag{font-size:10px}
+  .sec-div .num{font-size:11px}
+  
+  .ov-grid,.stack-grid,.uc-grid,.founder-grid,.achievements{grid-template-columns:1fr;gap:32px}
+  .ov-left h2{font-size:clamp(36px,7vw,60px);margin-bottom:20px}
+  .ov-left p{font-size:14px;margin-bottom:10px}
+  .stat{padding:18px 20px}
+  .stat .sl{font-size:10px}
+  .stat .sv{font-size:28px}
+  
+  .ss-card{width:380px;height:auto}
+  .ss-card img{height:220px}
+  .ss-label{font-size:11px;padding:12px 14px}
+  
+  .uc-grid{grid-template-columns:repeat(2,1fr);gap:2px}
+  .uc-item{padding:28px 20px}
+  .uc-icon{width:56px;height:56px;margin-bottom:16px}
+  .uc-icon svg{width:28px;height:28px}
+  .uc-title{font-size:16px}
+  .uc-desc{font-size:13px}
+  
+  .feat-grid{grid-template-columns:1fr;gap:2px}
+  .feat-item{padding:20px 24px;gap:16px}
+  .feat-icon-box{width:40px;height:40px}
+  .feat-icon-box svg{width:20px;height:20px}
+  .feat-text .ft{font-size:13px}
+  .feat-text .fd{font-size:12px}
+  
+  .pay-header h2{margin-bottom:32px}
+  .pay-grid{grid-template-columns:repeat(2,1fr);gap:2px}
+  .pay-item{font-size:12px;min-height:70px}
+  
+  .feat-header h2,.pay-header h2,.stack-header h2,.del-header h2,.tl-header h2,.pr-header h2,.founder-right h2{font-size:clamp(32px,5vw,60px)}
+  .feat-header p,.pay-header p,.stack-header p,.del-header p,.tl-header p,.pr-header p{font-size:14px;line-height:1.6}
+  
+  .sk-item{padding:32px 24px}
+  .sk-num{font-size:40px;margin-bottom:10px}
+  .sk-title{font-size:16px}
+  .sk-tech{font-size:10px;margin-bottom:10px}
+  .sk-desc{font-size:13px}
+  
+  .del-item{grid-template-columns:40px 1fr auto;gap:16px;padding:18px 24px}
+  .di-idx{font-size:24px}
+  .di-name{font-size:14px}
+  .di-detail{font-size:12px;margin-bottom:4px}
+  .di-tag{font-size:9px;padding:4px 10px}
+  
+  .phase{padding:24px 0 24px 36px}
+  .ph-title{font-size:18px}
+  .ph-tasks{gap:6px}
+  .ph-task{font-size:11px;padding:3px 10px}
+  
+  .pr-card{padding:32px 24px}
+  .pr-client{font-size:32px;margin-bottom:28px}
+  .pr-row{padding:12px 0}
+  .pr-rl{font-size:13px}
+  .pr-rv{font-size:14px}
+  .pr-total-val{font-size:56px}
+  .pr-total-val sub{font-size:18px}
+  
+  .founder-left{position:relative;top:0}
+  .founder-avatar{width:100%;margin-bottom:20px}
+  .founder-initials{font-size:48px}
+  .founder-name{font-size:24px;margin-bottom:4px}
+  .founder-right p{font-size:14px;margin-bottom:12px}
+  .achievements{grid-template-columns:repeat(2,1fr);gap:2px}
+  .ach-item{padding:20px}
+  .ach-val{font-size:32px}
+  .ach-label{font-size:10px}
+  
+  .offices{grid-template-columns:repeat(2,1fr);gap:12px}
+  .office{padding:24px 18px}
+  .office-flag{font-size:28px;margin-bottom:10px}
+  .office-country{font-size:12px;margin-bottom:10px;padding-bottom:10px}
+  .office-addr{font-size:11px;line-height:1.7}
+  .office-contact{font-size:10px;line-height:1.9}
+  
+  .co-services{margin-top:40px}
+  .service-pills{gap:10px;max-width:100%}
+  .s-pill{font-size:11px;padding:8px 14px}
+  
+  .cta-title{font-size:clamp(40px,10vw,100px)}
+  .cta-sub{font-size:14px;margin-bottom:32px}
+  .btn-p,.btn-s{padding:14px 32px;font-size:11px}
+  
+  footer{grid-template-columns:1fr;text-align:center;gap:16px;padding:24px}
+  .ft-brand{justify-content:center;margin-bottom:12px}
+  .footer-logo{height:32px}
+  .ft-center{font-size:10px;line-height:1.6}
+  .ft-right{text-align:center;font-size:11px;line-height:1.7}
+}
+
+/* MOBILE: iPhone and small devices (≤ 640px) */
+@media(max-width:640px){
+  nav{padding:14px 16px;gap:12px}
+  .nav-logo{gap:8px}
+  .nav-logo-img{height:28px}
+  .nav-logo-text{font-size:10px}
+  .nav-right{gap:8px}
+  .nav-link{font-size:9px;letter-spacing:1px}
+  .nav-cta{padding:6px 12px;font-size:9px}
+  
+  #hero{padding:0 16px;min-height:80vh;gap:16px}
+  .hero-eyebrow{font-size:8px;letter-spacing:2px;margin-bottom:12px}
+  .hero-title{font-size:clamp(42px,11vw,90px);line-height:0.9;margin:0}
+  .hero-divider{margin:20px 0}
+  .hero-bottom{gap:12px;align-items:center;text-align:center}
+  .hero-desc{font-size:12px;max-width:100%;line-height:1.6}
+  .hero-meta{flex-direction:column;gap:12px;align-items:center;text-align:center}
+  .hm-item span{font-size:18px}
+  .scroll-ind{left:16px;font-size:8px;bottom:24px;gap:8px}
+  .scroll-ln{width:20px}
+  
+  #overview,#preview,#usecases,#features,#payments,#stack,#deliverables,#timeline,#pricing,#founder,#company,#cta{padding:60px 16px}
+  footer{padding:16px}
+  .sec-div{padding:0 16px;margin-bottom:32px;gap:12px}
+  .sec-div .tag{font-size:8px;letter-spacing:2px}
+  .sec-div .ln{flex:1;height:0.5px}
+  .sec-div .num{font-size:9px}
+  
+  .ov-grid{gap:24px;grid-template-columns:1fr}
+  .ov-left h2{font-size:clamp(28px,8vw,48px);margin-bottom:16px;line-height:1}
+  .ov-left p{font-size:12px;line-height:1.6}
+  .ov-right{gap:0}
+  .stat{padding:14px 12px;flex-direction:column;text-align:center;gap:6px}
+  .stat .sl{font-size:8px}
+  .stat .sv{font-size:20px}
+  .stat .sv span{font-size:12px}
+  .server-note{margin-top:2px;padding:14px 12px}
+  .sn-label{font-size:8px;margin-bottom:6px}
+  .server-note p{font-size:11px}
+  
+  .preview-header{padding:0 16px;margin-bottom:24px}
+  .preview-header h2{font-size:clamp(24px,6vw,48px);margin-bottom:12px}
+  .ss-card{width:280px;height:auto}
+  .ss-card img{height:160px}
+  .ss-label{font-size:9px;padding:8px 10px}
+  
+  .uc-grid{grid-template-columns:1fr;gap:2px}
+  .uc-item{padding:20px 14px;border-top-width:2px}
+  .uc-item::after{font-size:60px;bottom:-2px;right:8px}
+  .uc-icon{width:48px;height:48px;margin-bottom:12px;border-radius:8px}
+  .uc-icon svg{width:24px;height:24px}
+  .uc-title{font-size:14px}
+  .uc-desc{font-size:12px;line-height:1.5}
+  
+  .feat-header h2,.pay-header h2,.stack-header h2,.del-header h2,.tl-header h2,.pr-header h2,.founder-right h2,.uc-header h2{font-size:clamp(24px,6vw,48px)}
+  .feat-header p,.pay-header p,.stack-header p,.del-header p,.tl-header p,.pr-header p,.uc-header p{font-size:12px}
+  
+  .feat-grid{grid-template-columns:1fr;gap:2px}
+  .feat-item{padding:16px 12px;gap:12px;flex-direction:column}
+  .feat-icon-box{width:36px;height:36px;margin-bottom:4px}
+  .feat-icon-box svg{width:18px;height:18px}
+  .feat-text .ft{font-size:12px;margin-bottom:4px}
+  .feat-text .fd{font-size:11px}
+  
+  .pay-header h2{margin-bottom:16px}
+  .pay-grid{grid-template-columns:1fr;gap:2px}
+  .pay-item{flex-direction:column;text-align:center;font-size:10px;min-height:60px;padding:16px}
+  .pay-note{font-size:10px;padding:0 16px}
+  
+  .sk-item{padding:20px 12px;gap:12px}
+  .sk-num{font-size:32px;margin-bottom:6px}
+  .sk-emoji{width:40px;height:40px;margin-bottom:8px}
+  .sk-emoji svg{width:22px;height:22px}
+  .sk-title{font-size:13px}
+  .sk-tech{font-size:9px;margin-bottom:8px}
+  .sk-desc{font-size:11px;line-height:1.5}
+  
+  .del-item{grid-template-columns:30px 1fr auto;gap:8px;padding:12px 12px}
+  .di-idx{font-size:18px}
+  .di-name{font-size:12px}
+  .di-detail{font-size:10px}
+  .di-tag{font-size:8px;padding:3px 8px}
+  
+  .phase{padding:16px 0 16px 28px}
+  .phase::before{left:-6px;top:28px}
+  .ph-week{font-size:8px}
+  .ph-title{font-size:14px;margin-bottom:8px}
+  .ph-tasks{gap:4px}
+  .ph-task{font-size:9px;padding:2px 8px}
+  
+  .pr-card{padding:20px 14px;margin:0 auto;max-width:100%}
+  .pr-card::before{font-size:48px;top:12px;right:-12px}
+  .pr-for{font-size:9px;margin-bottom:4px}
+  .pr-client{font-size:22px;margin-bottom:16px;letter-spacing:1px}
+  .pr-row{flex-direction:column;align-items:flex-start;padding:0;border:none;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .pr-rl{font-size:11px}
+  .pr-rv{font-size:14px}
+  .pr-total{flex-direction:column;align-items:flex-start;margin-top:16px;padding-top:16px;border-top:1px solid var(--red)}
+  .pr-total-lhs .ptl{font-size:8px;margin-bottom:4px}
+  .pr-total-lhs .ptn{font-size:10px;line-height:1.5}
+  .pr-total-val{font-size:40px;letter-spacing:0}
+  .pr-total-val sub{font-size:12px}
+  .server-warn{margin-top:12px;padding:12px 12px}
+  
+  .founder-grid{gap:24px}
+  .founder-left{position:relative}
+  .founder-avatar{width:100%;margin-bottom:12px;padding:0}
+  .founder-avatar::before{font-size:80px}
+  .founder-initials{font-size:36px;letter-spacing:2px}
+  .founder-role{font-size:9px;margin-top:4px}
+  .founder-name{font-size:18px;margin-bottom:2px}
+  .founder-title-tag{font-size:10px}
+  .founder-links{gap:6px;flex-wrap:wrap}
+  .f-link{font-size:9px;padding:5px 10px}
+  .founder-right p{font-size:12px;line-height:1.6}
+  .achievements{grid-template-columns:1fr;gap:2px}
+  .ach-item{padding:16px 12px}
+  .ach-val{font-size:24px}
+  .ach-val span{font-size:12px}
+  .ach-label{font-size:9px}
+  
+  .offices{grid-template-columns:1fr;gap:8px}
+  .office{padding:16px 12px;border-top-width:2px}
+  .office-flag{font-size:24px;margin-bottom:8px}
+  .office-country{font-size:11px;margin-bottom:8px;padding-bottom:8px}
+  .office-addr{font-size:10px;line-height:1.6}
+  .office-contact{font-size:9px;line-height:1.8}
+  
+  .co-services{margin-top:24px}
+  .co-services h3{font-size:12px;margin-bottom:12px}
+  .service-pills{gap:8px;flex-wrap:wrap}
+  .s-pill{font-size:9px;padding:6px 10px;border-radius:4px}
+  
+  .cta-ghost{font-size:clamp(40px,15vw,100px);letter-spacing:3px}
+  .cta-tag{font-size:9px}
+  .cta-title{font-size:clamp(28px,10vw,64px);margin-bottom:16px}
+  .cta-sub{font-size:12px;margin-bottom:24px;line-height:1.5}
+  .cta-btns{gap:8px}
+  .btn-p,.btn-s{padding:12px 20px;font-size:9px;letter-spacing:1px}
+  
+  footer{grid-template-columns:1fr;text-align:center;gap:12px;padding:14px}
+  .ft-brand{flex-direction:column;justify-content:center;margin-bottom:8px}
+  .footer-logo{height:24px}
+  .ft-center{font-size:9px;line-height:1.5}
+  .ft-right{font-size:9px;line-height:1.5}
+}
+
+/* EXTRA SMALL: Very small phones (≤ 480px) */
+@media(max-width:480px){
+  nav{padding:12px 12px}
+  .nav-logo-img{height:24px}
+  .nav-link{font-size:8px}
+  .nav-cta{padding:5px 10px;font-size:8px}
+  
+  #hero{padding:0 12px}
+  .hero-title{font-size:clamp(32px,10vw,70px)}
+  .hero-eyebrow{font-size:7px}
+  .hero-desc{font-size:11px}
+  
+  #overview,#preview,#usecases,#features,#payments,#stack,#deliverables,#timeline,#pricing,#founder,#company,#cta{padding:40px 12px}
+  footer{padding:12px}
+  
+  .ov-left h2{font-size:clamp(20px,7vw,36px)}
+  .stat{padding:10px 8px}
+  .stat .sl{font-size:7px}
+  .stat .sv{font-size:16px}
+  
+  .ss-card{width:220px}
+  .ss-card img{height:130px}
+  
+  .uc-grid{grid-template-columns:1fr}
+  .uc-item{padding:14px 10px}
+  .uc-icon{width:40px;height:40px}
+  
+  .feat-item{padding:12px 8px}
+  .feat-icon-box{width:32px;height:32px}
+  
+  .sk-item{padding:14px 10px}
+  .sk-num{font-size:24px}
+  
+  .del-item{grid-template-columns:24px 1fr auto;gap:6px;padding:8px 8px}
+  
+  .pr-card{padding:14px 10px}
+  .pr-client{font-size:18px}
+  .pr-total-val{font-size:32px}
+  
+  .founder-initials{font-size:28px}
+  .founder-name{font-size:16px}
+  
+  .office{padding:12px 10px}
+  .service-pills{gap:6px}
+  .s-pill{font-size:8px;padding:5px 8px}
+  
+  .btn-p,.btn-s{padding:10px 16px;font-size:8px}
+  
+  footer{gap:8px}
+  .footer-logo{height:20px}
+  .ft-center,.ft-right{font-size:8px}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-r"></div>
+<canvas id="bg"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">
+    <img src="aselea-logo.png" alt="Aselea Network" class="nav-logo-img">
+    <div class="nav-logo-text">
+      <!-- <div class="nav-logo-main">ASELEA<span>.</span>NETWORK</div>
+      <div class="nav-logo-sub">Confidential Proposal · NY Play OTT</div> -->
+    </div>
+  </div>
+  <div class="nav-right">
+    <a href="#founder" class="nav-link">About Us</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="https://wa.me/919024194918" target="_blank" class="nav-cta">WhatsApp Us</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow">Confidential Proposal · Prepared for Prashant Chauhan · 2025</div>
+  <h1 class="hero-title">
+    NY<br>
+    <span class="t-outline">PLAY</span><br>
+    <span class="t-red">OTT. Proposal</span>
+  </h1>
+  <div class="hero-divider"></div>
+  <div class="hero-bottom">
+    <p class="hero-desc">A production-grade streaming platform — web, backend & mobile — built from the ground up. Your own Netflix, delivered in 60 days.</p>
+    <div class="hero-meta">
+      <div class="hm-item"><label>Client</label><span>Prashant Chauhan</span></div>
+      <div class="hm-item"><label>Investment</label><span class="acc">₹15 Lac</span></div>
+      <div class="hm-item"><label>Timeline</label><span>60 Days</span></div>
+    </div>
+  </div>
+  <div class="scroll-ind"><div class="scroll-ln"></div>Scroll to explore</div>
+</section>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="sec-div reveal"><span class="tag">01 — Overview</span><div class="ln"></div><span class="num">THE VISION</span></div>
+  <div class="ov-grid">
+    <div class="ov-left reveal">
+      <h2>BUILD YOUR<br>OWN <em>NETFLIX.</em></h2>
+      <p>NY Play is a full-stack OTT streaming platform — Movies, TV Shows, Sports, Live TV, and a Flutter mobile app. Everything a modern streaming service needs, built custom for you.</p>
+      <p>We handle everything: frontend, backend API, mobile app, cloud setup, payment integration, and admin panel. You get a ready-to-launch product in 60 days.</p>
+    </div>
+    <div class="ov-right reveal">
+      <div class="stat"><span class="sl">Web Frontend</span><span class="sv">React <span>18+</span></span></div>
+      <div class="stat"><span class="sl">Backend API</span><span class="sv">Node <span>JS</span></span></div>
+      <div class="stat"><span class="sl">Mobile App</span><span class="sv">Flutter</span></div>
+      <div class="stat"><span class="sl">Investment</span><span class="sv">₹15 <span>LAC</span></span></div>
+      <div class="stat"><span class="sl">Delivery</span><span class="sv">1–2 <span>MO</span></span></div>
+      <div class="server-note">
+        <div class="sn-label">⚠ Server / Cloud Billing Note</div>
+        <p>Cloud server costs (AWS, GCP, or equivalent) are <strong style="color:#ddd">billed separately</strong> based on actual usage — storage, bandwidth, compute, and CDN. These are pass-through infrastructure costs and are <strong style="color:#ddd">not included</strong> in the ₹15 Lac development fee. We will advise you on the best plan as your platform grows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM SCREENSHOTS -->
+<section id="preview">
+  <div class="preview-header reveal">
+    <div class="sec-div" style="padding:0;margin-bottom:32px"><span class="tag">02 — Platform Preview</span><div class="ln"></div><span class="num">WHAT IT LOOKS LIKE</span></div>
+    <h2>INSIDE THE <span>PLATFORM.</span></h2>
+  </div>
+  <div class="screenshots-track reveal" aria-label="Platform screenshots">
+    <div class="ss-track">
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_01.png" alt="Homepage" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Home / Landing Page</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_02.png" alt="Movies" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Movies & Shows Browse</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_03.png" alt="Video Player" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Premium Video Player</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_04.png" alt="Movie Details" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Content Detail Page</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_05.png" alt="Admin Dashboard" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Admin Dashboard</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_06.png" alt="Subscriptions" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Subscription Plans</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_07.png" alt="Mobile App" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Flutter Mobile App</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_08.png" alt="Live TV" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Live TV Streaming</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_09.png" alt="User Dashboard" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">User Dashboard</div>
+      </div>
+
+      <!-- duplicated for seamless loop -->
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_01.png" alt="Homepage" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Home / Landing Page</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_02.png" alt="Movies" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Movies & Shows Browse</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_03.png" alt="Video Player" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Premium Video Player</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_04.png" alt="Movie Details" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Content Detail Page</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_05.png" alt="Admin Dashboard" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Admin Dashboard</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_06.png" alt="Subscriptions" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Subscription Plans</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_07.png" alt="Mobile App" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Flutter Mobile App</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_08.png" alt="Live TV" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">Live TV Streaming</div>
+      </div>
+      <div class="ss-card">
+        <img src="https://s3.envato.com/files/485641516/Video%20Scripts%20Screenshots/screen_09.png" alt="User Dashboard" loading="lazy" onerror="this.style.height='270px';this.style.background='#1a1a1f'">
+        <div class="ss-label">User Dashboard</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="usecases">
+  <div class="sec-div reveal"><span class="tag">03 — Use Cases</span><div class="ln"></div><span class="num">WHO THIS IS FOR</span></div>
+  <div class="uc-header reveal">
+    <h2>BUILT FOR <span>EVERY</span><br>STREAMING NEED.</h2>
+    <p>NY Play is a flexible platform that serves multiple content verticals and business models out of the box.</p>
+  </div>
+  <div class="uc-grid">
+    <div class="uc-item reveal" data-num="01">
+      <div class="uc-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="1.5" y="5" width="21" height="14" rx="2"></rect>
+          <polygon class="accent" points="10,8 16,12 10,16"></polygon>
+        </svg>
+      </div>
+      <div class="uc-title">Movies & Web Series OTT</div>
+      <div class="uc-desc">Launch your own movie streaming business with premium subscription plans, device limits, and a powerful content management system for unlimited uploads.</div>
+    </div>
+    <div class="uc-item reveal" data-num="02">
+      <div class="uc-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="2.5" y="5" width="19" height="12" rx="1.5"></rect>
+          <path d="M8 3l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M8 19h8"></path>
+        </svg>
+      </div>
+      <div class="uc-title">Live TV Channel Platform</div>
+      <div class="uc-desc">Stream multiple live TV channels via HLS/M3U8 with multi-server redundancy. Perfect for news channels, regional broadcasters, and sports networks.</div>
+    </div>
+    <div class="uc-item reveal" data-num="03">
+      <div class="uc-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M7 4h10a1 1 0 0 1 1 1v2a5 5 0 0 1-5 5 5 5 0 0 1-5-5V5a1 1 0 0 1 1-1z"></path>
+          <path d="M8 18h8v2H8z"></path>
+        </svg>
+      </div>
+      <div class="uc-title">Sports Streaming</div>
+      <div class="uc-desc">Dedicated sports section with live match streaming, highlights VOD, multi-quality support, and ad integration for monetizing sports audiences.</div>
+    </div>
+    <div class="uc-item reveal" data-num="04">
+      <div class="uc-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 3L2 8l10 5 10-5L12 3z"></path>
+          <path d="M12 8v6" class="accent"></path>
+        </svg>
+      </div>
+      <div class="uc-title">EdTech / Course Platform</div>
+      <div class="uc-desc">Monetize educational video content with subscription tiers, content ratings, watchlists, and a robust admin panel for course creators.</div>
+    </div>
+    <div class="uc-item reveal" data-num="05">
+      <div class="uc-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="7"></circle>
+          <path d="M2 12h20"></path>
+          <path d="M12 5a15 15 0 0 1 0 14"></path>
+        </svg>
+      </div>
+      <div class="uc-title">Regional Content Platform</div>
+      <div class="uc-desc">Language and genre-based content discovery, multi-language UI, and TMDb API integration to auto-populate regional movie databases at scale.</div>
+    </div>
+    <div class="uc-item reveal" data-num="06">
+      <div class="uc-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="3" y="7" width="18" height="12" rx="2"></rect>
+          <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </div>
+      <div class="uc-title">White-Label B2B Streaming</div>
+      <div class="uc-desc">Fully branded, white-label streaming infrastructure for media companies, production houses, or agencies looking to launch their own OTT product.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="sec-div reveal"><span class="tag">04 — Features</span><div class="ln"></div><span class="num">WHAT'S INCLUDED</span></div>
+  <div class="feat-header reveal">
+    <h2>40+ FEATURES<br><span>OUT OF THE BOX.</span></h2>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"></rect><polygon class="accent" points="10,9 16,12 10,15"></polygon></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Movies, Shows, Sports & Live TV</div><div class="fd">All four content types managed from a single unified admin panel with category controls.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"></rect><circle class="accent" cx="12" cy="17" r="1.4"></circle></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Flutter Mobile App (Android + iOS)</div><div class="fd">Native-grade mobile experience with video player, push notifications, downloads, and subscriptions.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2"></rect><path class="accent" d="M8 11h8"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Subscription Plans & Device Limits</div><div class="fd">Multiple pricing tiers with duration, device count restrictions, and coupon code support.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 4v2M12 18v2M4 12h2M18 12h2" stroke-linecap="round"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Live TV — Multi-Server Streaming</div><div class="fd">HLS/M3U8 live streaming with fallback server options for maximum uptime.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"></rect><circle class="accent" cx="12" cy="12" r="2.2"></circle></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Premium Video Player</div><div class="fd">4 player designs, quality selector, subtitle support, Chromecast, and ad integration (VAST/VMAP/IMA).</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path class="accent" d="M16 16l4 4"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Elastic Search</div><div class="fd">Blazing-fast content discovery across all categories with alphabetical and date sorting.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"></rect><path class="accent" d="M8 9h8v6H8z"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">TMDb API Auto-Import</div><div class="fd">Automatically pull movie/show data from The Movie Database — cast, posters, ratings, genres.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3 4h-6l3-4z"></path><path class="accent" d="M6 8h12v10H6z"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Premium / Paywalled Content</div><div class="fd">Restrict selected content to subscribers only. Free + Premium content tiers fully supported.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"></rect><path class="accent" d="M6 12h4v4H6z"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Admin Dashboard & Analytics</div><div class="fd">Revenue tracking, user stats, content performance, transaction history — all in one dashboard.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path class="accent" d="M12 3v18"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Multi-Language & Genre Listings</div><div class="fd">Language and genre-based content discovery pages with filters and rich categorization.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 12h18"></path><path class="accent" d="M8 6v12"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">Google Social Login + Email Auth</div><div class="fd">One-click Google sign-in plus standard email/password registration with OTP support.</div></div>
+    </div>
+    <div class="feat-item reveal">
+      <div class="feat-icon-box" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path class="accent" d="M7 12h10"></path></svg>
+      </div>
+      <div class="feat-text"><div class="ft">SEO + Sitemap Built-in</div><div class="fd">Full SEO meta tags on all pages plus auto-generated sitemap for Google discoverability.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENTS -->
+<section id="payments">
+  <div class="sec-div reveal"><span class="tag">05 — Payments</span><div class="ln"></div><span class="num">GATEWAY SUPPORT</span></div>
+  <div class="pay-header reveal">
+    <h2>14 PAYMENT<br><span>GATEWAYS.</span></h2>
+  </div>
+  <div class="pay-grid reveal">
+    <div class="pay-item">Razorpay</div>
+    <div class="pay-item">PayTM</div>
+    <div class="pay-item">PayUMoney</div>
+    <div class="pay-item">Instamojo</div>
+    <div class="pay-item">Stripe</div>
+    <div class="pay-item">PayPal</div>
+    <div class="pay-item">Cashfree</div>
+    <div class="pay-item">PayStack</div>
+    <div class="pay-item">Flutterwave</div>
+    <div class="pay-item">Mollie</div>
+    <div class="pay-item">Coingate</div>
+    <div class="pay-item">SSLCOMMERZ</div>
+    <div class="pay-item">CinetPay</div>
+    <div class="pay-item">Bank Transfer</div>
+  </div>
+  <p class="pay-note reveal">All gateways configurable via admin panel. Enable/disable and set API keys without touching code.</p>
+</section>
+
+<!-- TECH STACK -->
+<section id="stack">
+  <div class="sec-div reveal"><span class="tag">06 — Tech Stack</span><div class="ln"></div><span class="num">ARCHITECTURE</span></div>
+  <div class="stack-header reveal">
+    <h2>BUILT WITH<br>THE <span>BEST.</span></h2>
+  </div>
+  <div class="stack-grid">
+    <div class="sk-item reveal">
+      <div class="sk-num">01</div>
+      <div class="sk-emoji" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="14" rx="2"></rect><circle class="accent" cx="12" cy="11" r="3"></circle></svg>
+      </div>
+      <div class="sk-title">Web Frontend</div>
+      <div class="sk-tech">React 18 · Tailwind</div>
+      <div class="sk-desc">Fast, SEO-optimized web app with smooth playback UI, search, categories, and subscription flows.</div>
+    </div>
+    <div class="sk-item reveal">
+      <div class="sk-num">02</div>
+      <div class="sk-emoji" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="4" rx="1"></rect><rect x="4" y="12" width="16" height="4" rx="1"></rect></svg>
+      </div>
+      <div class="sk-title">Backend API</div>
+      <div class="sk-tech">Node.js · Express · MongoDB</div>
+      <div class="sk-desc">Scalable REST API for auth, content, streaming, payments, subscriptions, and analytics.</div>
+    </div>
+    <div class="sk-item reveal">
+      <div class="sk-num">03</div>
+      <div class="sk-emoji" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="18" rx="2"></rect></svg>
+      </div>
+      <div class="sk-title">Mobile App</div>
+      <div class="sk-tech">Flutter · Dart</div>
+      <div class="sk-desc">Single codebase for Android & iOS. Native-grade player, offline downloads, push notifications.</div>
+    </div>
+    <div class="sk-item reveal">
+      <div class="sk-num">04</div>
+      <div class="sk-emoji" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"></rect><polygon class="accent" points="10,9 16,12 10,15"></polygon></svg>
+      </div>
+      <div class="sk-title">Video Streaming</div>
+      <div class="sk-tech">HLS · Adaptive Bitrate</div>
+      <div class="sk-desc">ABR streaming with quality selection, Chromecast, and CDN-ready for all devices.</div>
+    </div>
+    <div class="sk-item reveal">
+      <div class="sk-num">05</div>
+      <div class="sk-emoji" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"></rect><path class="accent" d="M8 10h8v6H8z"></path></svg>
+      </div>
+      <div class="sk-title">Auth & Payments</div>
+      <div class="sk-tech">JWT · Razorpay + 13 more</div>
+      <div class="sk-desc">Secure JWT auth, 14 payment gateways, subscription management, and coupon engine.</div>
+    </div>
+    <div class="sk-item reveal">
+      <div class="sk-num">06</div>
+      <div class="sk-emoji" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20 16.6A5 5 0 0 0 16 9h-1"></path><path class="accent" d="M6 16a4 4 0 0 1 8 0"></path></svg>
+      </div>
+      <div class="sk-title">Cloud & Infra</div>
+      <div class="sk-tech">AWS / GCP · Docker</div>
+      <div class="sk-desc">Containerized production deployment with CDN, S3 storage, SSL, and auto-scaling. <em style="color:var(--gold);font-style:normal">Server billing separate.</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- DELIVERABLES -->
+<section id="deliverables">
+  <div class="sec-div reveal"><span class="tag">07 — Deliverables</span><div class="ln"></div><span class="num">WHAT YOU GET</span></div>
+  <div class="del-header reveal">
+    <h2>EVERY<br><span>DELIVERABLE.</span></h2>
+  </div>
+  <div class="del-list">
+    <div class="del-item reveal"><div class="di-idx">01</div><div><span class="di-name">React Web Application</span><span class="di-detail">Home, browse, player, user dashboard, search, watchlist, subscriptions</span></div><div class="di-tag h">Frontend</div></div>
+    <div class="del-item reveal"><div class="di-idx">02</div><div><span class="di-name">Node.js REST API</span><span class="di-detail">Full documented API — auth, streaming, content, payments, notifications</span></div><div class="di-tag h">Backend</div></div>
+    <div class="del-item reveal"><div class="di-idx">03</div><div><span class="di-name">Admin Panel</span><span class="di-detail">Content upload, user management, revenue analytics, subscription control</span></div><div class="di-tag h">Backend</div></div>
+    <div class="del-item reveal"><div class="di-idx">04</div><div><span class="di-name">Flutter Mobile App</span><span class="di-detail">Android + iOS — player, downloads, push notifications, subscriptions</span></div><div class="di-tag h">Mobile</div></div>
+    <div class="del-item reveal"><div class="di-idx">05</div><div><span class="di-name">14 Payment Gateways</span><span class="di-detail">Razorpay, Stripe, PayPal, PayTM, Instamojo + 9 more — all configurable</span></div><div class="di-tag">Payments</div></div>
+    <div class="del-item reveal"><div class="di-idx">06</div><div><span class="di-name">Live TV + VOD Streaming</span><span class="di-detail">HLS/M3U8, adaptive bitrate, multi-server, Chromecast, VAST ads</span></div><div class="di-tag">Streaming</div></div>
+    <div class="del-item reveal"><div class="di-idx">07</div><div><span class="di-name">Cloud Deployment & CDN</span><span class="di-detail">Full production deploy, domain config, SSL, media storage setup</span></div><div class="di-tag">Infra</div></div>
+    <div class="del-item reveal"><div class="di-idx">08</div><div><span class="di-name">Source Code + Documentation</span><span class="di-detail">Complete codebase on GitHub + technical docs for future maintenance</span></div><div class="di-tag">Included</div></div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section id="timeline">
+  <div class="sec-div reveal"><span class="tag">08 — Timeline</span><div class="ln"></div><span class="num">60-DAY PLAN</span></div>
+  <div class="tl-header reveal">
+    <h2>LIVE IN<br><span>60 DAYS.</span></h2>
+  </div>
+  <div class="tl-track">
+    <div class="phase reveal"><div class="ph-week">Week 1–2</div><div class="ph-title">Discovery & Architecture</div><div class="ph-tasks"><span class="ph-task">Requirements finalization</span><span class="ph-task">DB schema design</span><span class="ph-task">API architecture</span><span class="ph-task">UI wireframes</span><span class="ph-task">Infra planning</span></div></div>
+    <div class="phase reveal"><div class="ph-week">Week 3–4</div><div class="ph-title">Core Build — Web + API</div><div class="ph-tasks"><span class="ph-task">React frontend</span><span class="ph-task">Node.js API</span><span class="ph-task">Auth system</span><span class="ph-task">Video streaming setup</span><span class="ph-task">Admin panel</span><span class="ph-task">TMDb integration</span></div></div>
+    <div class="phase reveal"><div class="ph-week">Week 5–6</div><div class="ph-title">Flutter App + Integrations</div><div class="ph-tasks"><span class="ph-task">Flutter mobile app</span><span class="ph-task">Payment gateways</span><span class="ph-task">Push notifications</span><span class="ph-task">Offline downloads</span><span class="ph-task">Live TV setup</span></div></div>
+    <div class="phase reveal"><div class="ph-week">Week 7–8</div><div class="ph-title">QA, Deploy & Handoff</div><div class="ph-tasks"><span class="ph-task">Full QA</span><span class="ph-task">Performance optimization</span><span class="ph-task">Cloud deployment</span><span class="ph-task">CDN config</span><span class="ph-task">Source code handoff</span><span class="ph-task">Documentation</span></div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="sec-div reveal"><span class="tag">09 — Investment</span><div class="ln"></div><span class="num">PRICING</span></div>
+  <div class="pr-header reveal">
+    <h2>TRANSPARENT<br><span>PRICING.</span></h2>
+  </div>
+  <div class="pr-card reveal">
+    <div class="pr-for">Proposal Prepared For</div>
+    <div class="pr-client">Prashant Chauhan — NY Play OTT</div>
+    <div class="pr-row"><span class="pr-rl">React Web Application (Frontend)</span><span class="pr-rv">₹4,00,000</span></div>
+    <div class="pr-row"><span class="pr-rl">Node.js Backend API + Admin Panel</span><span class="pr-rv">₹5,00,000</span></div>
+    <div class="pr-row"><span class="pr-rl">Flutter Mobile App (Android + iOS)</span><span class="pr-rv">₹4,50,000</span></div>
+    <div class="pr-row"><span class="pr-rl">Cloud Setup, CDN Config & DevOps</span><span class="pr-rv">₹1,50,000</span></div>
+    <div class="pr-total">
+      <div class="pr-total-lhs">
+        <div class="ptl">Total Development Investment</div>
+        <div class="ptn">50% advance · 50% on delivery<br>GST extra if applicable</div>
+      </div>
+      <div class="pr-total-val">₹15L<sub>ac</sub></div>
+    </div>
+    <div class="server-warn">
+      <div class="sw-l">⚠ Cloud / Server Billing — Separate</div>
+      <p>Monthly cloud infrastructure costs (AWS/GCP) — including compute, storage, bandwidth, and CDN — are <strong style="color:#ddd">billed directly to you</strong> based on actual usage. These are not included in the above fee. Estimated starting cost: ₹3,000–₹15,000/month depending on your viewer scale. We'll guide you on the most cost-effective setup.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section id="founder">
+  <div class="sec-div reveal"><span class="tag">10 — The Builder</span><div class="ln"></div><span class="num">FOUNDER STORY</span></div>
+  <div class="founder-grid">
+    <div class="founder-left reveal">
+      <div class="founder-avatar">
+        <div class="founder-avatar-inner">
+          <span class="founder-initials">TS</span>
+          <span class="founder-role">Founder & CEO</span>
+        </div>
+      </div>
+      <div class="founder-name">Tanay Shrivastava</div>
+      <div class="founder-title-tag">Founder & CEO — Aselea Network</div>
+      <div class="founder-links">
+        <a href="https://linkedin.com/in/tanayshrivastava" target="_blank" class="f-link">LinkedIn</a>
+        <a href="https://aseleanetwork.com" target="_blank" class="f-link">Website</a>
+        <a href="https://wa.me/919024194918" target="_blank" class="f-link">WhatsApp</a>
+        <a href="https://www.instagram.com/aseleanetwork" target="_blank" class="f-link">Instagram</a>
+        <a href="https://www.instagram.com/peakyprotocol/" target="_blank" class="f-link">Instagram</a>
+      </div>
+    </div>
+    <div class="founder-right reveal">
+      <h2>BUILT BY<br>A <span>BUILDER.</span></h2>
+      <p>Tanay Shrivastava is the Founder and CEO of Aselea Network OPC Pvt. Ltd., a Jaipur-based technology company. With over 7 years of hands-on experience in full-stack development, SaaS products, and digital transformation — Tanay has led a team of 50 professionals, delivering enterprise-grade solutions across India, the US, UAE, and the UK.</p>
+      <p>He studied at Fudan University and built his first product before most founders write their first pitch deck. Today, Aselea Network serves <strong>500+ clients</strong> across industries including government, real estate, e-commerce, media, and fintech.</p>
+      <p>Under his leadership, Aselea Network was selected to deliver technology solutions for the <strong>Government of Rajasthan</strong> — one of India's largest state administrations — a testament to the company's technical depth and reliability.</p>
+      <!-- <p>Beyond agency work, Tanay actively builds SaaS products — including imiglasses.com (AI smart glasses e-commerce) and AdGen AI, an AI-powered ad creative platform. He believes in shipping fast, building real, and solving problems that matter.</p> -->
+      <div class="achievements">
+        <div class="ach-item"><div class="ach-val">500<span>+</span></div><div class="ach-label">Clients Served</div></div>
+        <div class="ach-item"><div class="ach-val">7<span>+</span></div><div class="ach-label">Years in Business</div></div>
+        <div class="ach-item"><div class="ach-val">5<span> Countries</span></div><div class="ach-label">Global Presence</div></div>
+        <div class="ach-item"><div class="ach-val">GOV<span>.</span></div><div class="ach-label">Govt of Rajasthan Client</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPANY -->
+<section id="company">
+  <div class="sec-div reveal"><span class="tag">11 — About Aselea Network</span><div class="ln"></div><span class="num">WHO WE ARE</span></div>
+  <div class="co-header reveal">
+    <h2>GLOBAL REACH,<br>LOCAL <span>EXPERTISE.</span></h2>
+  </div>
+  <div class="offices reveal">
+    <div class="office">
+      <div class="office-flag">🇮🇳</div>
+      <div class="office-country">India HQ</div>
+      <div class="office-addr">SKYP Towers<br>Pratap Nagar, Sitapura<br>Jaipur, Rajasthan 302022</div>
+      <div class="office-contact">
+        <span>+91 78788 94918</span>
+        <a href="mailto:info@aseleanetwork.com">info@aseleanetwork.com</a>
+      </div>
+    </div>
+    <div class="office">
+      <div class="office-flag">🇺🇸</div>
+      <div class="office-country">USA Office</div>
+      <div class="office-addr">5 Penn Plaza, 14th Floor,<br>New York, NY 10001, US</div>
+      <div class="office-contact">
+        <span>+1 315-503-5065</span>
+        <a href="mailto:us@aseleanetwork.com">us@aseleanetwork.com</a>
+      </div>
+    </div>
+    <div class="office">
+      <div class="office-flag">🇬🇧</div>
+      <div class="office-country">UK Office</div>
+      <div class="office-addr">1 Sheldon Square,<br>London, W2 6TT,<br>United Kingdom</div>
+      <div class="office-contact">
+        <a href="mailto:uk@aseleanetwork.com">uk@aseleanetwork.com</a>
+      </div>
+    </div>
+    <div class="office">
+      <div class="office-flag">🇦🇪</div>
+      <div class="office-country">UAE Office</div>
+      <div class="office-addr">1st Floor, Emaar Square, Building 6,<br>Dubai, United Arab Emirates<br>P.O. Box 123456</div>
+      <div class="office-contact">
+        <a href="mailto:uae@aseleanetwork.com">uae@aseleanetwork.com</a>
+      </div>
+    </div>
+    <div class="office">
+      <div class="office-flag">🇩🇪</div>
+      <div class="office-country">Germany Office</div>
+      <div class="office-addr">Banking Circle S.A. – German Branch,<br>Maximilianstraße 54,<br>80538 München</div>
+      <div class="office-contact">
+        <a href="mailto:info@aseleanetwork.com">info@aseleanetwork.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="co-services reveal">
+    <h3>Our Core Services</h3>
+    <div class="service-pills">
+      <div class="s-pill">Android & iOS Development</div>
+      <div class="s-pill">React & Node.js</div>
+      <div class="s-pill">Flutter Apps</div>
+      <div class="s-pill">Digital Marketing</div>
+      <div class="s-pill">Blockchain Development</div>
+      <div class="s-pill">AI / ML Solutions</div>
+      <div class="s-pill">SaaS Products</div>
+      <div class="s-pill">Web3 & NFT</div>
+      <div class="s-pill">UI/UX Design</div>
+      <div class="s-pill">Cloud & DevOps</div>
+      <div class="s-pill">SEO & PPC</div>
+      <div class="s-pill">Fintech Solutions</div>
+    </div>
+  </div>
+  <div class="official-box reveal">
+    <div class="label">Official Website</div>
+    <a href="https://aseleanetwork.com" target="_blank" class="link">aseleanetwork.com <img src="aselea-logo.png" alt="Aselea logo" class="official-icon"></a>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-ghost">LET'S BUILD</div>
+  <div class="cta-inner">
+    <div class="cta-tag">Ready to launch NY Play?</div>
+    <h2 class="cta-title">LET'S<br><span class="t-outline">BUILD</span><br>NY PLAY</h2>
+    <p class="cta-sub">Drop a message — we'll get back within 24 hours and kick things off.</p>
+    <div class="cta-btns">
+      <a href="https://wa.me/919024194918?text=Hi+Tanay,+I+want+to+proceed+with+the+NY+Play+OTT+proposal" target="_blank" class="btn-p">📱 WhatsApp Now</a>
+      <a href="mailto:tanay@aseleanetwork.com?subject=NY+Play+OTT+Proposal" class="btn-s">✉ Send Email</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-brand">
+    <a href="https://aseleanetwork.com" target="_blank" aria-label="Aselea Network">
+      <img src="aselea-logo.png" alt="Aselea Network" class="footer-logo">
+    </a>
+  </div>
+  <div class="ft-center">Confidential Proposal · NY Play OTT · 2025<br>Prepared by Tanay Shrivastava</div>
+  <div class="ft-right">tanay@aseleanetwork.com<br>+91 90241 94918<br><a href="https://linkedin.com/in/tanayshrivastava" target="_blank">LinkedIn ↗️</a></div>
+</footer>
+
+<script>
+// ─── CURSOR ───
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function animCur(){cur.style.left=mx+'px';cur.style.top=my+'px';rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animCur)})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2)';ring.style.width='56px';ring.style.height='56px'});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.width='38px';ring.style.height='38px'});
+});
+
+// ─── NAV ───
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('sc',scrollY>60));
+
+// ─── REVEAL ───
+const ro=new IntersectionObserver(en=>en.forEach(e=>e.isIntersecting&&e.target.classList.add('vis')),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// ─── THREE.JS BG ───
+const canvas=document.getElementById('bg');
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,100);
+cam.position.z=5;
+
+// Particles
+const N=1000,g=new THREE.BufferGeometry();
+const pos=new Float32Array(N*3);
+for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*24;pos[i*3+1]=(Math.random()-.5)*24;pos[i*3+2]=(Math.random()-.5)*16}
+g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+const pts=new THREE.Points(g,new THREE.PointsMaterial({color:0xe8302a,size:.035,transparent:true,opacity:.45,sizeAttenuation:true}));
+scene.add(pts);
+
+// Torus
+const tor=new THREE.Mesh(new THREE.TorusGeometry(4,1,8,64),new THREE.MeshBasicMaterial({color:0xe8302a,wireframe:true,transparent:true,opacity:.035}));
+tor.position.set(5,-2,-3);scene.add(tor);
+
+// Icosahedron
+const ico=new THREE.Mesh(new THREE.IcosahedronGeometry(3,1),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.02}));
+ico.position.set(-6,2,-4);scene.add(ico);
+
+// Octahedron
+const oct=new THREE.Mesh(new THREE.OctahedronGeometry(1.5,0),new THREE.MeshBasicMaterial({color:0xe8302a,wireframe:true,transparent:true,opacity:.04}));
+oct.position.set(0,0,-5);scene.add(oct);
+
+// Grid lines
+const lm=new THREE.LineBasicMaterial({color:0x18181e});
+for(let i=-12;i<=12;i+=2){
+  const g1=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,-12,-9),new THREE.Vector3(i,12,-9)]);
+  const g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-12,i,-9),new THREE.Vector3(12,i,-9)]);
+  scene.add(new THREE.Line(g1,lm));scene.add(new THREE.Line(g2,lm));
+}
+
+let mx2=0,my2=0;
+document.addEventListener('mousemove',e=>{mx2=(e.clientX/innerWidth-.5)*2;my2=(e.clientY/innerHeight-.5)*2});
+window.addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+
+let t=0;
+(function anim(){requestAnimationFrame(anim);t+=.004;
+  pts.rotation.y=t*.06+mx2*.04;pts.rotation.x=t*.03+my2*.02;
+  tor.rotation.x+=.002;tor.rotation.y+=.004;
+  ico.rotation.x-=.0015;ico.rotation.y+=.003;
+  oct.rotation.x+=.003;oct.rotation.z+=.002;
+  cam.position.x+=(mx2*.25-cam.position.x)*.04;cam.position.y+=(-my2*.25-cam.position.y)*.04;cam.lookAt(scene.position);
+  renderer.render(scene,cam);
+})();
+</script>
+<script>
+// Auto-scroll screenshots carousel while allowing manual scroll/drag.
+(function(){
+  const container=document.querySelector('.screenshots-track');
+  if(!container) return;
+  const track=container.querySelector('.ss-track');
+  if(!track) return;
+
+  let isDown=false, startX=0, scrollStart=0;
+  let lastInteraction=Date.now();
+  const pauseAfter=1500; // ms to wait after user interaction
+  const loopDuration=28000; // ms for one full loop of one set
+
+  // RAF loop for auto-scrolling
+  let lastTimestamp=0;
+  function step(ts){
+    if(!lastTimestamp) lastTimestamp=ts;
+    const dt=ts-lastTimestamp; lastTimestamp=ts;
+    const singleWidth=track.scrollWidth/2 || 0;
+    if(singleWidth>0 && Date.now()-lastInteraction>pauseAfter){
+      const pxPerMs = singleWidth/loopDuration; // pixels per ms
+      container.scrollLeft += pxPerMs * dt;
+      if(container.scrollLeft >= singleWidth){
+        container.scrollLeft -= singleWidth;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // Pointer drag support (mouse + touch)
+  container.addEventListener('pointerdown', (e)=>{
+    isDown=true; container.setPointerCapture(e.pointerId);
+    startX = e.clientX; scrollStart = container.scrollLeft; lastInteraction = Date.now();
+  }, {passive:true});
+  container.addEventListener('pointermove', (e)=>{
+    if(!isDown) return; const dx = e.clientX - startX; container.scrollLeft = scrollStart - dx; lastInteraction = Date.now();
+  }, {passive:true});
+  container.addEventListener('pointerup', (e)=>{ isDown=false; try{container.releasePointerCapture(e.pointerId)}catch(e){} lastInteraction=Date.now(); }, {passive:true});
+  container.addEventListener('pointercancel', ()=>{ isDown=false; lastInteraction=Date.now(); }, {passive:true});
+
+  // Pause auto-scroll on wheel/touch interactions
+  container.addEventListener('wheel', ()=> lastInteraction=Date.now(), {passive:true});
+  container.addEventListener('touchstart', ()=> lastInteraction=Date.now(), {passive:true});
+
+  // Wrap-around safety when user scrolls manually
+  container.addEventListener('scroll', ()=>{
+    const singleWidth=track.scrollWidth/2 || 0;
+    if(singleWidth<=0) return;
+    if(container.scrollLeft >= singleWidth) container.scrollLeft -= singleWidth;
+  }, {passive:true});
+})();
+</script>
+</body>
+</html>
